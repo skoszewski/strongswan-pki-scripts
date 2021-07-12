@@ -89,7 +89,7 @@ drwxr-xr-x 1 ubuntu ubuntu 4096 Jul 12 11:08 servers
 An attempt to run the `create-ca.sh` again will stop with a message.
 
 ```shell
-$ sh pki-scripts/create-ca.sh
+$ sh <scripts_directory_name>/create-ca.sh
 The CA has already been initialized. Re-run init-ca.sh script to remove it or create another one.
 ```
 
@@ -106,13 +106,13 @@ $ . example-ca/env.sh
 Use the `server-cert.sh` script to create server certficates.
 
 ```shell
-$ <pki-scripts>/server-cert.sh <fqdn-name> <alternative-fqdn-1> <alternative-fqdn-2> ...
+$ sh <scripts_directory_name>/server-cert.sh <fqdn-name> <alternative-fqdn-1> <alternative-fqdn-2> ...
 ```
 
 An example:
 
 ```shell
-$ <pki-scripts>/server-cert.sh www-server1.example.com www.example.com ftp.example.com mail.example.com example.com
+$ sh <scripts_directory_name>/server-cert.sh www-server1.example.com www.example.com ftp.example.com mail.example.com example.com
 ```
 
 and output:
@@ -147,19 +147,19 @@ The script will create an unencrypted private key file and a certificate file.
 Use the `client-cert.sh` script to create client certificates.
 
 ```shell
-$ <pki-scripts>/client-cert.sh <common-name> <e-mail>
+$ sh <scripts_directory_name>/client-cert.sh <common-name> <e-mail>
 ```
 
 An example:
 
 ```shell
-$ <pki-scripts>/client-cert.sh "John Smith" "j.smith@example.com"
+$ sh <scripts_directory_name>/client-cert.sh "John Smith" "j.smith@example.com"
 ```
 
 and output:
 
 ```text
-$ <pki-scripts>/client-cert.sh "John Smith" "j.smith@example.com"
+$ sh <scripts_directory_name>/client-cert.sh "John Smith" "j.smith@example.com"
 A certificate will be issued for: "John Smith" with E-mail: "j.smith@example.com"
 It will be saved in "/home/slawek/example-ca/clients" directory with the name "j_smith-at-example_com.pem".
 
@@ -225,7 +225,7 @@ A sample output:
 The certificates have to be revoked and a new CRL has to be published once they are no longer needed or has been compromised. You can revoke a certificate using the `revoke-cert.sh` script:
 
 ```shell
-$ <pki-scripts>/revoke-cert.sh <path-to-cert-file> <reason>
+$ sh <scripts_directory_name>/revoke-cert.sh <path-to-cert-file> <reason>
 ```
 
 You can specify one of the following reasons:
