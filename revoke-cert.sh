@@ -33,9 +33,11 @@ then
     exit 1
 fi
 
+CERTSERIAL=$(openssl x509 -noout -serial -in $CERTPATH|sed 's/^serial=//')
+
 echo "The certificate: $(openssl x509 -noout -subject -in $CERTPATH|sed 's/^subject=//')"
-echo "with the serial number: $(openssl x509 -noout -startdate -in $CERTPATH|sed 's/^notBefore=//')"
-echo "issued on $(openssl x509 -noout -serial -in $CERTPATH|sed 's/^serial=//') will be revoked."
+echo "with the serial number: $CERTSERIAL"
+echo "issued on $(openssl x509 -noout -startdate -in $CERTPATH|sed 's/^notBefore=//') will be revoked."
 
 read -p "Are you sure? " ans
 
@@ -45,7 +47,7 @@ then
 fi
 
 # Try to revoke the certificate
-if pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 --lastcrl $CACRL --cert $CERTPATH --reason $REASON > $CACRL.new
+if pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 --lastcrl $CACRL --reason $REASON --cert $CERTPATH > $CACRL.new
 then
     mv $CACRL $CACRL.old
     mv $CACRL.new $CACRL
@@ -53,6 +55,12 @@ else
     echo "ERROR: Cannot create a new CRL file. The certificate has not been revoked."
     exit 1
 fi
+
+# Show the new CRL
+pki --print --type crl --in $CACRL
+
+# Archive the certificate file using the revocation date and certificate serial number as a new name.
+cp $CERTPATH $CAROOT/revoked/$(date "+%Y%m%d")-$CERTSERIAL.pem
 
 # Remove PFX and password file.
 if [ -f $CERTDIR/${BASENAME}.p12 ]
@@ -74,6 +82,3 @@ if ! rm $CERTPATH $KEYPATH
 then
     echo "WARNING: Certificate file or key file or both were not removed."
 fi
-
-# Show the new CRL
-openssl crl -noout -text -in $CACRL -inform DER
