@@ -1,6 +1,6 @@
 # Strongswan PKI Scripts
 
-A set of scripts designed to help building a simple CA.
+A set of scripts designed to help building a simple CA on an **EdgeOS** router and the schedule automatic CRL publishing to a UNIX/Linux web server.
 
 ## Prerequisities
 
@@ -221,3 +221,93 @@ You can specify one of the following reasons:
 * `certificate-hold`
 
 The `superseded` reason is used if the second argument is omitted.
+
+## Automatic CRL upload from an EdgeOS router
+
+Create a file named `crl-renewal.sh` in the `/config/scripts` directory:
+
+```shell
+#!/bin/sh
+
+. /config/user-data/CA/env.sh
+pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 > $CACRL.new
+mv $CACRL $CACRL.old
+mv $CACRL.new $CACRL
+scp -q -i /root/.ssh/id_rsa $CAROOT/crl.pem user@server.example.com:/var/www/www-data/crl.pem
+```
+
+Make it executable.
+
+```shell
+$ sudo chmod 755 /config/scripts/crl-renewal.sh
+```
+
+Change username, server fqdn and file path according to your configuration.
+
+Create a new user called `www-upload` on the www server and then create an empty file:
+
+```shell
+$ touch /var/www/www-data/crl.pem
+$ chmod 644 www-upload:www-data /var/www/www-data/crl.pem
+```
+
+Initiate the first upload:
+
+```shell
+$ sudo sh /config/scripts/crl-renewal.sh
+```
+
+Schedule CRL file renewal and upload:
+
+```text
+$ configure
+# set system task-scheduler task crl-renewal executable path /config/scripts/crl-renewal.sh
+# set system task-scheduler task crl-renewal interval 30d
+# commit; save; exit
+```
+
+## Secure authorized_keys files
+
+Run the following script as the **root**:
+
+```shell
+#!/bin/sh
+
+# Add the following line to the /etc/ssh/sshd_config file and restart the SSH service
+# AuthorizedKeysFile  /etc/ssh/authorized_keys/%u
+
+USERS=$(awk -F":" '{ print $1":"$6 }' /etc/passwd)
+newdir="/etc/ssh/authorized_keys"
+
+if [ ! -d $newdir ]
+then
+  mkdir -m 755 $newdir
+fi
+
+for x in $USERS
+do
+  u=$(echo $x | cut -d: -f 1)
+  d=$(echo $x | cut -d: -f 2)
+  f=$d/.ssh/authorized_keys
+
+  if [ -f $f ]
+  then
+    echo Migrating the authorized_keys file for the user $u...
+    cp $f $newdir/$u
+    chmod 644 $newdir/$u
+    mv $f $f.bak
+  fi
+done
+```
+
+and update the `/etc/ssh/sshd_config` with the following file:
+
+```text
+AuthorizedKeysFile  /etc/ssh/authorized_keys/%u
+```
+
+then restart the **SSH** service:
+
+```shell
+$ sudo systemctl restart ssh.service
+```
