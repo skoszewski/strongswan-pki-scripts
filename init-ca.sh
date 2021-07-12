@@ -93,20 +93,5 @@ export CACRL=\$CAROOT/crl.pem
 export CRLURI=$uCAURL
 ENDOFENV
 
-# Source the environment, don't use bash'es `source` command
-. $CAROOT/env.sh
-
-# Generate CA private key
-pki --gen --outform pem > $CAKEY
-
-# Issue a self signed CA certificate
-pki --self --in $CAKEY --dn "CN=$CANAME$CADN" --ca --lifetime 3650 --outform pem > $CACERT
-
-# Create a base revocation list (empty for now)
-pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 > $CACRL
-
-# Print the resulting certificate
-echo ""
-echo "CA certificate created."
-echo ""
-pki --print --in $CACERT
+echo "An empty CA has been initialized in \"$CAROOT\"."
+exit 0
