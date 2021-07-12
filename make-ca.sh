@@ -11,6 +11,7 @@ read -p "Organization Unit : " uOU
 read -p "Locality          : " uL
 read -p "State             : " uST
 read -p "Country           : " uC
+read -p "CA CRL URL        : " uCAURL
 
 # Define initial configuration
 CANAME="${uCN:-Custom CA $(date +%Y%m%d)}"
@@ -48,6 +49,12 @@ then
     CADN="$CADN,C=$uC"
 fi
 
+if [ -z "$uCAURL" ]
+then
+    echo "CA CRL publish URL is not defined. Cannot continue."
+    exit 1
+fi
+
 if [ ! -d $CAROOT ]
 then
     # using bash-like construct {servers,clients,revoked} may not work on embedded shells
@@ -77,13 +84,13 @@ CAROOT="$(cd $CAROOT; pwd)"
 
 # Create env.sh file. Remove the email from DN suffix appended to each certificate DN.
 cat >$CAROOT/env.sh <<ENDOFENV
-export CAROOT=/config/user-data/CA
+export CAROOT=$CAROOT
 export CANAME="$CANAME"
 export CADNSUFFIX="$(echo $CADN | perl -pe 's/,E=.*?,/,/')"
 export CAKEY=\$CAROOT/caKey.pem
 export CACERT=\$CAROOT/caCert.pem
 export CACRL=\$CAROOT/crl.pem
-export CRLURI=http://www.koszewscy.waw.pl/crl.pem
+export CRLURI=$uCAURL
 ENDOFENV
 
 # Source the environment, don't use bash'es `source` command
