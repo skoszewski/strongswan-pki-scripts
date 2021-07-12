@@ -95,13 +95,12 @@ $ <pki-scripts>/server-cert.sh <fqdn-name> <alternative-fqdn-1> <alternative-fqd
 An example:
 
 ```shell
-$ <pki-scripts>/server-cert.sh www.example.com ftp.example.com mail.example.com example.com
+$ <pki-scripts>/server-cert.sh www-server1.example.com www.example.com ftp.example.com mail.example.com example.com
 ```
 
 and output:
 
 ```text
-$ server-cert.sh www-server1.example.com  www.example.com ftp.example.com mail.example.com example.com
 A certificate will be issued for the FQDN: www-server1.example.com
 It will be saved in "/home/ubuntu/example-ca/servers" directory with the name "www-server1.pem".
 
