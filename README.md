@@ -14,17 +14,17 @@ The `pki` command is already available on **EdgeOS** routers.
 
 ## CA Initialization
 
-Run the `make-ca.sh` script to initializa the CA storage. The script suite will use a directory for key and certificate storage.
+Run the `init-ca.sh` script to initializa the CA storage. The script suite will use a directory for key and certificate storage.
 
 ```shell
-sh <scripts_directory_name>/make-ca.sh <directory_name>
+$ sh <scripts_directory_name>/make-ca.sh <directory_name>
 ```
 
 > NOTE: You can omit the directory name and the script will default to use **EdgeOS** `/config/user-data/CA` configuration filesystem area.
 
 An example script call-out:
 ```text
-$ make-ca.sh example-ca
+$ sh <scripts_directory_name>/init-ca.sh example-ca
 Common Name       : Example CA
 Email Address     : pki@example.com
 Organization      : Example Corp.
@@ -33,33 +33,7 @@ Locality          : New York City
 State             : New York
 Country           : US
 CA CRL URL        : https://www.example.com/crl.pem
-
-CA certificate created.
-
-  subject:  "CN=Example CA, E=pki@example.com, O=Example Corp., OU=IT, L=New York City, ST=New York, C=US"
-  issuer:   "CN=Example CA, E=pki@example.com, O=Example Corp., OU=IT, L=New York City, ST=New York, C=US"
-  validity:  not before Jul 12 11:08:17 2021, ok
-             not after  Jul 10 11:08:17 2031, ok (expires in 3650 days)
-  serial:    76:ce:99:d4:b1:e3:fa:f0
-  flags:     CA CRLSign self-signed
-  subjkeyId: 7a:90:a7:ef:f6:24:4a:61:0e:17:ad:4f:2f:a3:a2:26:07:84:8b:55
-  pubkey:    RSA 2048 bits
-  keyid:     4f:70:a1:fe:f8:f4:01:1d:a3:94:b1:32:15:19:6f:e0:35:96:8b:47
-  subjkey:   7a:90:a7:ef:f6:24:4a:61:0e:17:ad:4f:2f:a3:a2:26:07:84:8b:5
-  ```
-
-  The directory contents:
-
-  ```text
-  $ ls -l example-ca/
-total 8
--rw-r--r-- 1 ubuntu ubuntu 1419 Jul 12 11:08 caCert.pem
--rw-r--r-- 1 ubuntu ubuntu 1679 Jul 12 11:08 caKey.pem
-drwxr-xr-x 1 ubuntu ubuntu 4096 Jul 12 11:08 clients
--rw-r--r-- 1 ubuntu ubuntu  531 Jul 12 11:08 crl.pem
--rw-r--r-- 1 ubuntu ubuntu  267 Jul 12 11:08 env.sh
-drwxr-xr-x 1 ubuntu ubuntu 4096 Jul 12 11:08 revoked
-drwxr-xr-x 1 ubuntu ubuntu 4096 Jul 12 11:08 servers
+An empty CA has been initialized in "/home/ubuntu/example-ca".
 ```
 
 The `env.sh` contents:
@@ -74,7 +48,50 @@ export CACRL=$CAROOT/crl.pem
 export CRLURI=https://www.example.com/crl.pem
 ```
 
-Copy the `crl.pem` file to the Web location specified.
+Source the CA shell environment variables.
+
+```shell
+$ . example-ca/env.sh
+```
+
+Create CA certifate and initial CRL.
+
+```shell
+$ sh <scripts_directory_name>/create-ca.sh
+CA certificate created.
+
+  subject:  "CN=Example CA, E=pki@example.com, O=Example Corp., OU=IT, L=New York City, ST=New York, C=US"
+  issuer:   "CN=Example CA, E=pki@example.com, O=Example Corp., OU=IT, L=New York City, ST=New York, C=US"
+  validity:  not before Jul 12 11:08:17 2021, ok
+             not after  Jul 10 11:08:17 2031, ok (expires in 3650 days)
+  serial:    76:ce:99:d4:b1:e3:fa:f0
+  flags:     CA CRLSign self-signed
+  subjkeyId: 7a:90:a7:ef:f6:24:4a:61:0e:17:ad:4f:2f:a3:a2:26:07:84:8b:55
+  pubkey:    RSA 2048 bits
+  keyid:     4f:70:a1:fe:f8:f4:01:1d:a3:94:b1:32:15:19:6f:e0:35:96:8b:47
+  subjkey:   7a:90:a7:ef:f6:24:4a:61:0e:17:ad:4f:2f:a3:a2:26:07:84:8b:5
+```
+
+The directory contents:
+
+```shell
+$ ls -l example-ca/
+total 8
+-rw-r--r-- 1 ubuntu ubuntu 1419 Jul 12 11:08 caCert.pem
+-rw-r--r-- 1 ubuntu ubuntu 1679 Jul 12 11:08 caKey.pem
+drwxr-xr-x 1 ubuntu ubuntu 4096 Jul 12 11:08 clients
+-rw-r--r-- 1 ubuntu ubuntu  531 Jul 12 11:08 crl.pem
+-rw-r--r-- 1 ubuntu ubuntu  267 Jul 12 11:08 env.sh
+drwxr-xr-x 1 ubuntu ubuntu 4096 Jul 12 11:08 revoked
+drwxr-xr-x 1 ubuntu ubuntu 4096 Jul 12 11:08 servers
+```
+
+An attempt to run the `create-ca.sh` again will stop with a message.
+
+```shell
+$ sh pki-scripts/create-ca.sh
+The CA has already been initialized. Re-run init-ca.sh script to remove it or create another one.
+```
 
 ## Using the CA
 

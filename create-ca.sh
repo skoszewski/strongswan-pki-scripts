@@ -20,7 +20,6 @@ then
     pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 > $CACRL
 
     # Print the resulting certificate
-    echo ""
     echo "CA certificate created."
     echo ""
     pki --print --in $CACERT
