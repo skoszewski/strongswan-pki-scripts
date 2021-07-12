@@ -72,6 +72,9 @@ else
     fi
 fi
 
+# Convert relative path to absolute
+CAROOT="$(cd $CAROOT; pwd)"
+
 # Create env.sh file. Remove the email from DN suffix appended to each certificate DN.
 cat >$CAROOT/env.sh <<ENDOFENV
 export CAROOT=/config/user-data/CA
