@@ -76,25 +76,6 @@ export CRLURI=https://www.example.com/crl.pem
 
 Copy the `crl.pem` file to the Web location specified.
 
-Setup a process of recreating the `crl.pem` file and uploading it to the web server.
-
-You can display the CRL using the following command:
-
-```shell
-$ pki --print --type crl --in example-ca/crl.pem
-```
-
-The sample output:
-
-```text
-  issuer:   "CN=Example CA, E=pki@example.com, O=Example Corp., OU=IT, L=New York City, ST=New York, C=US"
-  update:    this on Jul 12 11:08:17 2021, ok
-             next on Aug 12 11:08:17 2021, ok (expires in 30 days)
-  serial:    01
-  authKeyId: 7a:90:a7:ef:f6:24:4a:61:0e:17:ad:4f:2f:a3:a2:26:07:84:8b:55
-  0 revoked certificates
-```
-
 ## Using the CA
 
 Initialize the CA shell environment variables by sourcing the created `env.sh` file.
@@ -195,3 +176,49 @@ Private keys:
 > NOTE: You will not see the `*` characters while typing the password - they are only displayed here to indicate that the password has been typed in.
 
 If for any reasons you will not respond *Yes* to the query about the password, the script will generate a random 12-character password and store it in a plain text file. It will display it for you to type-in and verify encrypted file.
+
+> IMPORTANT: Do not remove nor delete certificate files from the directory. These files are needed to revoke certificate. You can delete the files after the certificate has been revoked and CRL updated, although it is a good practice to archive any issued certificate files.
+
+## Certificate revokation and CRL management
+
+The CA initialization script will create the first CRL file. You can repeat the process using the following command:
+
+```shell
+$ pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 > $CACRL
+```
+
+and display it:
+
+```shell
+$ pki --print --type crl --in $CACRL
+```
+
+A sample output:
+
+```text
+  issuer:   "CN=Example CA, E=pki@example.com, O=Example Corp., OU=IT, L=New York City, ST=New York, C=US"
+  update:    this on Jul 12 11:34:48 2021, ok
+             next on Aug 12 11:34:48 2021, ok (expires in 30 days)
+  serial:    01
+  authKeyId: a4:4e:33:63:63:58:c7:4f:0b:52:51:b5:70:8f:80:19:d9:6a:09:fc
+  0 revoked certificates```
+```
+
+### Revoking a certificate
+
+The certificates have to be revoked and a new CRL has to be published once they are no longer needed or has been compromised. You can revoke a certificate using the `revoke-cert.sh` script:
+
+```shell
+$ <pki-scripts>/revoke-cert.sh <path-to-cert-file> <reason>
+```
+
+You can specify one of the following reasons:
+
+* `cessation-of-operation`
+* `superseded`
+* `key-compromise`
+* `ca-compromise`
+* `affiliation-changed`
+* `certificate-hold`
+
+The `superseded` reason is used if the second argument is omitted.
