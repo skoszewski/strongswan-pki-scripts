@@ -201,7 +201,7 @@ A sample output:
              next on Aug 12 11:34:48 2021, ok (expires in 30 days)
   serial:    01
   authKeyId: a4:4e:33:63:63:58:c7:4f:0b:52:51:b5:70:8f:80:19:d9:6a:09:fc
-  0 revoked certificates```
+  0 revoked certificates
 ```
 
 ### Revoking a certificate
