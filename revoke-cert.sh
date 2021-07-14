@@ -47,7 +47,7 @@ then
 fi
 
 # Try to revoke the certificate
-if pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 --lastcrl $CACRL --reason $REASON --cert $CERTPATH > $CACRL.new
+if pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime $CACRLLIFE --lastcrl $CACRL --reason $REASON --cert $CERTPATH > $CACRL.new
 then
     mv $CACRL $CACRL.old
     mv $CACRL.new $CACRL

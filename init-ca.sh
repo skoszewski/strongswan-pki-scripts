@@ -91,6 +91,10 @@ export CAKEY=\$CAROOT/caKey.pem
 export CACERT=\$CAROOT/caCert.pem
 export CACRL=\$CAROOT/crl.pem
 export CRLURI=$uCAURL
+export CACRTYRS=10
+export CASRVYRS=2
+export CACLIYRS=1
+export CACRLLIFE=30
 ENDOFENV
 
 echo "An empty CA has been initialized in \"$CAROOT\"."

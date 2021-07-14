@@ -14,10 +14,10 @@ then
     pki --gen --outform pem > $CAKEY
 
     # Issue a self signed CA certificate
-    pki --self --in $CAKEY --dn "CN=$CANAME$CADN" --ca --lifetime 3650 --outform pem > $CACERT
+    pki --self --in $CAKEY --dn "CN=$CANAME$CADN" --ca --lifetime $(($CACRTYRS * 365)) --outform pem > $CACERT
 
     # Create a base revocation list (empty for now)
-    pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 > $CACRL
+    pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime $CACRLLIFE > $CACRL
 
     # Print the resulting certificate
     echo "CA certificate created."

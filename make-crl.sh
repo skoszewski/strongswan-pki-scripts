@@ -15,7 +15,7 @@ then
     exit 1
 fi
 
-if pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 --lastcrl $CACRL > $CACRL.new
+if pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime $CACRLLIFE --lastcrl $CACRL > $CACRL.new
 then
     mv $CACRL $CACRL.old
     mv $CACRL.new $CACRL

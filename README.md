@@ -200,7 +200,7 @@ If for any reasons you will not respond *Yes* to the query about the password, t
 The CA initialization script will create the first CRL file. You can repeat the process using the following command:
 
 ```shell
-$ pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 > $CACRL
+$ pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime $CACRLLIFE > $CACRL
 ```
 
 and display it:
@@ -247,7 +247,7 @@ Create a file named `crl-renewal.sh` in the `/config/scripts` directory:
 #!/bin/sh
 
 . /config/user-data/CA/env.sh
-pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime 31 > $CACRL.new
+pki --signcrl --cacert $CACERT --cakey $CAKEY --digest sha256 --lifetime $CACRLLIFE > $CACRL.new
 mv $CACRL $CACRL.old
 mv $CACRL.new $CACRL
 scp -q -i /root/.ssh/id_rsa $CAROOT/crl.pem user@server.example.com:/var/www/www-data/crl.pem
