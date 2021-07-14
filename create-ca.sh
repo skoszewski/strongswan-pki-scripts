@@ -13,6 +13,9 @@ then
     # Generate CA private key
     pki --gen --outform pem > $CAKEY
 
+    # Secure the key
+    chmod 0600 $CAKEY
+
     # Issue a self signed CA certificate
     pki --self --in $CAKEY --dn "CN=$CANAME$CADNSUFFIX" --ca --lifetime $(($CACRTYRS * 365)) --outform pem > $CACERT
 

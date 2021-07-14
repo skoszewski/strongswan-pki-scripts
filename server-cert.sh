@@ -62,6 +62,7 @@ fi
 
 echo -n "Generating key pair and the certificate..."
 pki --gen --outform pem > $KEYPATH
+chmod 0600 $KEYPATH
 pki --issue --cacert $CACERT --cakey $CAKEY --in $KEYPATH --type priv --dn "CN=${NAME}${CADNSUFFIX}" $SAN_OPTIONS --flag serverAuth --flag clientAuth --crl $CRLURI --lifetime $(($CASRVYRS * 365)) --outform pem --digest sha256 > $CERTPATH
 echo "done."
 
