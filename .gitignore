@@ -2,3 +2,4 @@ crl.pem
 *.tar
 *.gz
 *.zip
+test*.sh
