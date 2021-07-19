@@ -20,6 +20,9 @@ BASENAME=$(echo $EMAIL | sed 's/\./_/g' | sed 's/@/-at-/')
 # Build certificate and key path names
 CERTPATH="$CERTDIR/${BASENAME}.pem"
 KEYPATH="$CERTDIR/${BASENAME}-key.pem"
+PASSPATH="$CERTDIR/${BASENAME}.pass"
+P12NAME="${BASENAME}.p12"
+P12PATH="$CERTDIR/${P12NAME}"
 
 if [ -f $CERTPATH ]
 then
@@ -39,8 +42,10 @@ then
 fi
 
 echo -n "Generating key pair and the certificate..."
-pki --gen --outform pem > $KEYPATH
+if [ -f $KEYPATH ]; then rm -f $KEYPATH; fi
+touch $KEYPATH
 chmod 0600 $KEYPATH
+pki --gen --outform pem >> $KEYPATH
 pki --issue --cacert $CACERT --cakey $CAKEY --in $KEYPATH --type priv --dn "E=$EMAIL,CN=$CN${CADNSUFFIX}" --flag clientAuth --crl $CRLURI --lifetime $(($CACLIYRS * 365)) --outform pem --digest sha256 > $CERTPATH
 echo "done."
 
@@ -48,21 +53,20 @@ read -p "Do you want to provide you own export password for the PCKS#12 file? " 
 
 if echo $ans | grep -q '^[yY]'
 then
-    openssl pkcs12 -export -in $CERTPATH -inkey $KEYPATH -certfile $CACERT -name "$CN" -out $CERTDIR/$BASENAME.p12
+    openssl pkcs12 -export -in $CERTPATH -inkey $KEYPATH -certfile $CACERT -name "$CN" -out $P12PATH
 else
-    openssl rand 12 | base64 > $CERTDIR/$BASENAME.txt
-    openssl pkcs12 -export -in $CERTPATH -inkey $KEYPATH -certfile $CACERT -passout file:$CERTDIR/$BASENAME.txt -name "$CN" -out $CERTDIR/$BASENAME.p12
+    if [ -f $PASSPATH ]; then rm -f $PASSPATH; fi
+    touch $PASSPATH
+    chmod 0600 $PASSPATH
+    openssl rand 12 | base64 >> $PASSPATH
+    openssl pkcs12 -export -in $CERTPATH -inkey $KEYPATH -certfile $CACERT -passout file:$PASSPATH -name "$CN" -out $P12PATH
+    chmod 0644 $P12PATH
 
-    echo "The password for $BASENAME.p12 is \"$(cat $CERTDIR/$BASENAME.txt)\"."
+    echo "The password for $P12NAME is \"$(cat $PASSPATH)\"."
     echo ""
 fi
 
 pki --print --in $CERTPATH
 echo ""
 
-if [ -f $CERTDIR/$BASENAME.txt ]
-then
-    echo "You will be asked to enter the following password: \"$(cat $CERTDIR/$BASENAME.txt)\""
-fi
-
-pki --pkcs12 --list --in $CERTDIR/$BASENAME.p12
+pki --pkcs12 --list --in $PASSPATH
