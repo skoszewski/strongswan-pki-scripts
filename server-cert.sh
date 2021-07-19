@@ -11,9 +11,12 @@ fi
 CERTDIR=$CAROOT/servers
 
 # Parse the first argument as a main DNS FQDN
-NAME="${1:?ERROR: Server DNS name is missing.}"
+_NAME="${1:?ERROR: Server DNS name is missing.}"
 
-# Strip the domain part from the FQDN
+# Strip the '=' from the beginning
+NAME=${_NAME#=}
+
+# Strip the domain part from the FQDN and convert all upper case letter to lower case.
 BASENAME="$(echo $NAME | sed 's/\..*//g' | tr 'A-Z' 'a-z')"
 
 # Build certificate and key path names
@@ -26,7 +29,7 @@ then
     exit 1
 fi
 
-SAN_OPTIONS="--san \"${NAME}\""
+SAN_OPTIONS="--san \"$NAME\""
 FQDNS=""
 
 # Process additional arguments as additional SANs
@@ -44,7 +47,16 @@ do
     shift
 done
 
-echo "A certificate will be issued for the FQDN: $NAME"
+# Build DN from the CN and CA DN suffix.
+# Optionally create a CN only DN if the name was prefixed with the equals character ('=').
+if [ $NAME = $_NAME ]
+then
+    DN="CN=$NAME$CADNSUFFIX"
+else
+    DN="CN=$NAME"
+fi
+
+echo "A certificate will be issued for the DN: $DN"
 echo "It will be saved in \"$CERTDIR\" directory with the name \"${BASENAME}.pem\"."
 echo ""
 if [ "$FQDNS" ]
@@ -63,7 +75,7 @@ fi
 echo -n "Generating key pair and the certificate..."
 pki --gen --outform pem > $KEYPATH
 chmod 0600 $KEYPATH
-pki --issue --cacert $CACERT --cakey $CAKEY --in $KEYPATH --type priv --dn "CN=${NAME}${CADNSUFFIX}" $SAN_OPTIONS --flag serverAuth --flag clientAuth --crl $CRLURI --lifetime $(($CASRVYRS * 365)) --outform pem --digest sha256 > $CERTPATH
+pki --issue --cacert $CACERT --cakey $CAKEY --in $KEYPATH --type priv --dn $DN $SAN_OPTIONS --flag serverAuth --flag clientAuth --crl $CRLURI --lifetime $(($CASRVYRS * 365)) --outform pem --digest sha256 > $CERTPATH
 echo "done."
 
 # Print the certificate information
