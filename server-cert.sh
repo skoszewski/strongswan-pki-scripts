@@ -14,7 +14,7 @@ CERTDIR=$CAROOT/servers
 NAME="${1:?ERROR: Server DNS name is missing.}"
 
 # Strip the domain part from the FQDN
-BASENAME="$(echo $NAME | sed 's/\..*//g')"
+BASENAME="$(echo $NAME | sed 's/\..*//g' | tr 'A-Z' 'a-z')"
 
 # Build certificate and key path names
 CERTPATH="$CERTDIR/${BASENAME}.pem"
